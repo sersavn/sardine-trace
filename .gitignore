@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Generated/build output
+generated/
+dist/
+
+# Secrets
+.env
+.env.*
+
+# OS/editor
+.DS_Store
