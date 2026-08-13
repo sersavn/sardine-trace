@@ -31,19 +31,32 @@ def markdown_body(note_path: Path) -> str:
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         return text
+
     for i in range(1, len(lines)):
         if lines[i].strip() == "---":
             return "\n".join(lines[i + 1:])
+
     return text
 
 
-def root_url(repo_path: str) -> str:
-    return "/" + repo_path.lstrip("/")
+def site_relative(repo_path: str, root_prefix: str) -> str:
+    """
+    Convert a repository-relative deployed path such as:
+        exercises/probability-theory/.../ex12-problem.webp
+    into a URL relative to the generated exercise page.
+
+    Using relative URLs makes the site work both at:
+        https://user.github.io/
+    and:
+        https://user.github.io/repository-name/
+    """
+    return root_prefix + repo_path.lstrip("/")
 
 
-def render(item: dict) -> str:
+def render(item: dict, root_prefix: str) -> str:
     note_path = Path(item["note"])
     body = markdown_body(note_path)
+
     llm_comments = extract_section(body, "LLM Comments")
     my_thoughts = extract_section(body, "My Thoughts")
 
@@ -54,13 +67,16 @@ def render(item: dict) -> str:
     exercise = html.escape(str(item.get("exercise", "")))
     outcome = html.escape(str(item.get("outcome", "")))
     created = html.escape(str(item.get("created", "")))
-    raw_note = html.escape(root_url(item["note"]))
+
+    home_url = root_prefix
+    stylesheet_url = root_prefix + "styles.css"
+    raw_note = html.escape(site_relative(item["note"], root_prefix))
 
     blocks = []
 
     problem = item.get("problem_statement")
     if problem:
-        p = html.escape(root_url(problem))
+        p = html.escape(site_relative(problem, root_prefix))
         blocks.append(
             '<section class="card">'
             '<div class="section-kicker">Problem</div>'
@@ -70,9 +86,11 @@ def render(item: dict) -> str:
 
     attempts = item.get("solution_attempts") or []
     if attempts:
-        attempt_html = ['<section class="card"><div class="section-kicker">My work</div>']
+        attempt_html = [
+            '<section class="card"><div class="section-kicker">My work</div>'
+        ]
         for i, ref in enumerate(attempts, start=1):
-            u = html.escape(root_url(ref))
+            u = html.escape(site_relative(ref, root_prefix))
             attempt_html.append(
                 f'<article class="attempt"><h3>Attempt {i}</h3>'
                 f'<a href="{u}"><img class="exercise-image" src="{u}" '
@@ -98,7 +116,11 @@ def render(item: dict) -> str:
         )
 
     minutes = item.get("time_spent_min")
-    minutes_html = f"<span>{html.escape(str(minutes))} min</span>" if minutes is not None else ""
+    minutes_html = (
+        f"<span>{html.escape(str(minutes))} min</span>"
+        if minutes is not None
+        else ""
+    )
 
     return f"""<!doctype html>
 <html lang="en">
@@ -106,12 +128,12 @@ def render(item: dict) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{source} · Ch {chapter} · Ex {exercise} — SardineTrace</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="{stylesheet_url}">
 </head>
 <body>
   <main class="exercise-page">
     <nav class="top-nav">
-      <a href="/">← SardineTrace</a>
+      <a href="{home_url}">← SardineTrace</a>
       <a href="{raw_note}">View raw Markdown</a>
     </nav>
 
@@ -148,11 +170,21 @@ def main() -> int:
         source = slugify(item["source"])
         chapter = f'ch{item["chapter"]}'
         exercise = f'ex{item["exercise"]}'
-        relative = f"exercise-pages/{subject}/{source}/{chapter}/{exercise}/"
 
+        relative = f"exercise-pages/{subject}/{source}/{chapter}/{exercise}/"
         out_dir = DIST / relative
         out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / "index.html").write_text(render(item), encoding="utf-8")
+
+        # The generated page sits at:
+        # exercise-pages/<subject>/<source>/<chapter>/<exercise>/index.html
+        # so five ".." components return to the deployed site root.
+        root_prefix = "../../../../../"
+
+        (out_dir / "index.html").write_text(
+            render(item, root_prefix),
+            encoding="utf-8",
+        )
+
         item["page_url"] = relative
 
     data_dir = DIST / "data"
