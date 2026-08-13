@@ -17,6 +17,7 @@ def write_note(
     *,
     exercise: str = "1",
     include_attempt: bool = True,
+    subject: str = "probability",
 ) -> Path:
     exercise_dir = root / "exercises/probability/example/ch1"
     exercise_dir.mkdir(parents=True, exist_ok=True)
@@ -31,7 +32,7 @@ status: active
 schema: tpl.pen-paper@0.2
 created: 2026-08-13 10:00
 source: example
-subject: probability
+subject: {subject}
 topics: counting
 chapter: "1"
 exercise: "{exercise}"
@@ -80,6 +81,22 @@ class PublicPipelineTests(unittest.TestCase):
             analytics = json.loads((root / "generated/analytics.json").read_text())
             self.assertEqual(analytics["total_exercises"], 1)
             self.assertEqual(analytics["total_time_spent_min"], 12)
+
+    def test_indexes_keep_multiple_areas_separate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_note(root, "statistics", exercise="1", subject="statistics")
+            write_note(root, "linear-algebra", exercise="2", subject="linear algebra")
+
+            self.assertEqual(run_script("validate.py", root).returncode, 0)
+            result = run_script("build_indexes.py", root)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            analytics = json.loads((root / "generated/analytics.json").read_text())
+            self.assertEqual(
+                analytics["subjects"],
+                {"linear algebra": 1, "statistics": 1},
+            )
 
     def test_missing_solution_asset_fails_validation(self):
         with tempfile.TemporaryDirectory() as tmp:

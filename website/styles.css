@@ -1,12 +1,24 @@
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: light dark;
+  --border: color-mix(in srgb, currentColor 20%, transparent);
+  --muted: color-mix(in srgb, currentColor 68%, transparent);
+  --activity-0: color-mix(in srgb, currentColor 8%, transparent);
+  --activity-1: #9be9a8;
+  --activity-2: #40c463;
+  --activity-3: #30a14e;
+  --activity-4: #216e39;
 }
 
-body { margin: 0; }
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
 
 main {
-  width: min(960px, calc(100% - 2rem));
+  width: min(1120px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 4rem 0;
 }
@@ -39,7 +51,7 @@ h1 {
 .stat,
 .exercise,
 .card {
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 1rem;
 }
@@ -53,6 +65,168 @@ h1 {
 .meta { opacity: 0.72; font-size: 0.9rem; }
 
 a { color: inherit; }
+
+.dashboard-section { margin-top: 4rem; }
+
+.section-heading,
+.day-details-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.section-heading h2,
+.day-details-heading h3 { margin: 0.25rem 0 0; }
+
+.section-summary {
+  max-width: 28rem;
+  margin: 0;
+  color: var(--muted);
+  text-align: right;
+}
+
+.heatmap-card {
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.heatmap-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.heatmap-calendar {
+  display: grid;
+  grid-template-columns: 2.4rem max-content;
+  grid-template-rows: 1.25rem max-content;
+  gap: 0.35rem 0.5rem;
+  min-width: max-content;
+}
+
+.heatmap-months {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(53, 12px);
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.heatmap-months span { white-space: nowrap; }
+
+.heatmap-day-labels {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  gap: 3px;
+  font-size: 0.65rem;
+  line-height: 12px;
+  color: var(--muted);
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  grid-auto-flow: column;
+  grid-auto-columns: 12px;
+  gap: 3px;
+}
+
+.heatmap-cell {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+  border-radius: 3px;
+  background: var(--activity-0);
+}
+
+button.heatmap-cell { cursor: pointer; }
+.heatmap-cell[data-level="1"] { background: var(--activity-1); }
+.heatmap-cell[data-level="2"] { background: var(--activity-2); }
+.heatmap-cell[data-level="3"] { background: var(--activity-3); }
+.heatmap-cell[data-level="4"] { background: var(--activity-4); }
+
+.heatmap-cell.is-selected {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+.heatmap-cell.is-future {
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+}
+
+.heatmap-legend {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  margin-top: 0.9rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.heatmap-legend span:first-child { margin-right: 0.3rem; }
+.heatmap-legend span:last-child { margin-left: 0.3rem; }
+
+.area-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.area-button {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.8rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.area-button strong {
+  min-width: 1.4rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: var(--activity-0);
+  font-size: 0.75rem;
+}
+
+.area-button.is-active {
+  color: #fff;
+  background: #216e39;
+  border-color: #216e39;
+}
+
+.area-button.is-active strong { background: rgb(255 255 255 / 18%); }
+
+.day-details {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-left: 3px solid var(--activity-3);
+  background: var(--activity-0);
+  border-radius: 0 12px 12px 0;
+}
+
+.day-details:empty { display: none; }
+.day-details-heading strong { white-space: nowrap; }
+.day-exercise-list { display: grid; gap: 0.65rem; margin-top: 1rem; }
+.compact-exercise { background: Canvas; }
+.compact-exercise h3 { font-size: 1rem; }
+.compact-exercise h3 a,
+.compact-exercise .meta { overflow-wrap: anywhere; }
+.empty-state { margin: 0; color: var(--muted); }
 
 .exercise-page { width: min(880px, calc(100% - 2rem)); }
 
@@ -96,3 +270,10 @@ a { color: inherit; }
 .text-card .prose { margin-top: 0.8rem; line-height: 1.65; }
 
 .exercise-footer { margin-top: 3rem; opacity: 0.8; }
+
+@media (max-width: 640px) {
+  main { padding-top: 2.5rem; }
+  .section-heading,
+  .day-details-heading { align-items: flex-start; flex-direction: column; }
+  .section-summary { text-align: left; }
+}

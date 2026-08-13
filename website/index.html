@@ -14,7 +14,33 @@
       <p>Structured evidence of exercises, attempts, reviews, and progress.</p>
     </header>
     <section class="stats" id="stats"></section>
-    <section>
+
+    <section class="dashboard-section" aria-labelledby="all-activity-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">All areas</p>
+          <h2 id="all-activity-title">Activity overview</h2>
+        </div>
+        <p class="section-summary" id="all-activity-summary"></p>
+      </div>
+      <div id="all-heatmap" class="heatmap-card"><p>Loading activity…</p></div>
+      <div id="all-day-details" class="day-details" aria-live="polite"></div>
+    </section>
+
+    <section class="dashboard-section" aria-labelledby="area-activity-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">By area</p>
+          <h2 id="area-activity-title">Specialized activity</h2>
+        </div>
+        <p class="section-summary">Choose an area to isolate its practice history.</p>
+      </div>
+      <div id="area-selector" class="area-selector" aria-label="Learning areas"></div>
+      <div id="area-heatmap" class="heatmap-card"><p>Loading areas…</p></div>
+      <div id="area-day-details" class="day-details" aria-live="polite"></div>
+    </section>
+
+    <section class="dashboard-section">
       <h2>Recent exercises</h2>
       <div id="exercise-list" class="exercise-list"><p>Loading…</p></div>
     </section>
